@@ -21,9 +21,9 @@ Changelog:
 
 General overview of functions:  
 
-1. Establish which region's exports we're working with, by iterating back from 99 and looking from a match.  Display function message if nothing is found.  
+1. Establish which region's exports we're working with, by iterating back from 99 and looking from a match.  Display message explaining function of the script if nothing is found.  
 
-2. If GIMP is installed, call the two map-maker scripts.  The script will find the install location, and if they're not already in place copy the mapmaker scripts to the user's GIMP folder.
+2. If GIMP has ever been opened and is installed, call the two map-maker scripts.  The script will find the install location, and if they're not already in place copy the mapmaker scripts to the user's GIMP folder.
 
 3. Call OptiPNG to compress the bitmaps to PNG format.  
 
