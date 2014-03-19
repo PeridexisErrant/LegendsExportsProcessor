@@ -15,7 +15,10 @@ ECHO Please wait paitently - this script may take several minutes, or even more 
 
 rem If placed as a utility in the LNP, run from the DF folder
 IF NOT EXIST "%CD%\Dwarf Fortress.exe" (
-	IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.34.11\optipng.exe" 
+	IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.34.11\Dwarf Fortress.exe" 
+		FOR %%A in (*.bmp 7z.* *.scm optipng.exe GetGimpInstallLocation.cmd) do (
+			if not exist "%CD%\..\..\..\Dwarf Fortress 0.34.11\%%A" copy "%CD%\%%A" "%CD%\..\..\..\Dwarf Fortress 0.34.11\%%A"	rem note that this does not have the 'old .scm' protection built in by the every-time xcopy below.  One or the other should probably change!
+		)
 		CD "..\..\..\Dwarf Fortress 0.34.11"
 	)
 )
