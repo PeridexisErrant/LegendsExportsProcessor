@@ -3,19 +3,11 @@ LegendsExportsProcessor
 
 A set of tools to process the files exported from Dwarf Fortress's Legends mode, and a script to call all of them.  Windows-only for now, as it's a .bat file.  I did make some progress on a Python port, but it's nowhere near feature parity.  
 
-I'm just teaching myself git (along with everything else...) so hopefully this first project won't go too badly wrong.  A stable version is available at http://dffd.wimbli.com/file.php?id=7989
+I'm just teaching myself git (along with everything else...) so hopefully this first project won't go too badly wrong.  A stable version is available at http://dffd.wimbli.com/file.php?id=7989.  For the newest version - which *should* be stable, and is definitley enhanced - you can use the 'download as a zip' option on the right, and place the whole unzipped folder in the LNP/utilities folder of the DF Starter pack or in the same folder as the Dwarf Fortress executable.  
 
 This script is released under the GPL3, or as CC-BY-SA-NC at your option.  The GPL3 licence can be found at https://www.gnu.org/licenses/gpl.html
 
-It incorporates code written by Parker147 to call his DwarfMapMaker (a GIMP script), CharonM27 for RealisticMapMaker (derived from the before), and /u/YukiHyou in general cleanup and assistance.  Thanks!  
-
-Changelog:  
-  v2 	initial standalone release, previously as part of PeridexisErrant's Lazy Newb Pack
-  v2.1	loads of bugfixes
-  v2.2	few typos, added a module to remove workflow contamination of legends.xml for Legends Viewer.  
-  v2.3	fixed the loop at start to count down (set region1 as a match for region11 before...) and expanded the range to regions 999:1 inclusive just because
-  v2.4	moved DwarfMapMaker to the same folder as Dwarf Fortress.exe, so that that dependancy is easy to include in the standalone distribution, standalone now includes said dependancies (trees.bmp, dirt.bmp, mountains.bmp, and DwarfMapMaker.scm)
-	v2.5	added RealisticMapMaker, a second map processing script; enabled it to be placed in a LNP\Utilities\legendsprocessor folder
+It incorporates code written by Parker147 to call his DwarfMapMaker (a GIMP script), CharonM72 for SatelliteMapMaker (derived from the before), and /u/YukiHyou in general cleanup and assistance.  Thanks!  
 
 ----------------------------
 

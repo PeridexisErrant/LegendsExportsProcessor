@@ -10,8 +10,17 @@ rem				v2.2	few typos, added a module to remove workflow contamination of legend
 rem				v2.3	fixed the loop at start to count down (set region1 as a match for region11 before...) and expanded the range to regions 999:1 inclusive just because
 rem				v2.4	moved DwarfMapMaker to the same folder as Dwarf Fortress.exe, so that that dependancy is easy to include in the standalone distribution, standalone now includes said dependancies (trees.bmp, dirt.bmp, mountains.bmp, and DwarfMapMaker.scm)
 rem				v2.5	added RealisticMapMaker, a second map processing script; enabled it to be placed in a LNP\Utilities\legendsprocessor folder
+rem			subsequent versions available on GitHub at https://github.com/PeridexisErrant/LegendsExportsProcessor
 
-ECHO Please wait paitently - this script may take several minutes, or even more for very large or long worlds!
+echo.
+echo This is a script to process files exported from Dwarf Fortress's Legends Mode.  
+echo. 
+echo It scans the Dwarf Fortress folder for exported files and applies only to the latest region, uses GIMP (if installed) to make photo-style extra maps, calls optiPNG for lossless compression of bitmaps images, calls 7zip to create a legends archive for Legends viewer (or simply compress the legends xml), and moves the processed files to a region-specific User Content folder
+echo.
+echo Please wait paitently - the process may take several minutes, or even more for very large or long worlds.
+echo.
+echo -----------------------------
+echo.
 
 rem If placed as a utility in the LNP, run from the DF folder
 IF NOT EXIST "%CD%\Dwarf Fortress.exe" IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.34.11\Dwarf Fortress.exe" CD "..\..\..\Dwarf Fortress 0.34.11"
@@ -20,6 +29,7 @@ REM set region ID, to use in rest of script, works for 1-99 inclusive, if site m
 FOR /L %%G IN (999,-1,1) DO (
 	IF EXIST "%CD%\*region%%G*"  (
 		set "region#=region%%G"
+		echo Script now processing legends exports from %region#%.
 		goto got_region
 		)
 	)
@@ -29,12 +39,12 @@ If exist "%CD%\site_map-*.bmp"  (
 	)
 
 :Error
-Echo Legends Exports not found
 echo.
-echo For all parts of this script to work, you need to export the 'p' general information, 'x'ml legends file, and all 'd'etailed maps (hotkey 'a' for all).
+Echo Error:  Legends Exports not found!
 echo.
-echo This will create .png maps for Isoworld, a compresed archive for Legends Viewer, and if applicable use the Fantasty Map Maker too (see the extras folder)
-pause
+echo For all parts of this script to work, you need to export the 'p' general information, 'x'ml legends file, and all 'd'etailed maps.  Site maps may also be exported.  
+echo.
+timeout /t 60
 goto end
 
 :got_region
@@ -114,16 +124,24 @@ rem convert bitmaps to .png
 if not exist "%~dp0optipng.exe" (
 	echo OptiPNG is missing!  Images not compressed.
 	goto no_optipng
-	)
+) else (
+	echo Compressing maps with OptiPNG...
+)
 rem - The "compress-bitmaps" part, which I edited to bypass the source files used by the map maker above
 if exist "%CD%\*%region#%*.bmp" (
 	"%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet *%region#%*.bmp
-	if %ERRORLEVEL% == 0 del *%region#%*.bmp
+	if %ERRORLEVEL% == 0 (
+		del *%region#%*.bmp
+		echo Region maps compressed.  
+		)
 	)
 rem addition to handle site maps: 
 if exist "%CD%\site_map-*.bmp" (
 	"%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet site_map-*.bmp
-	if %ERRORLEVEL% == 0 del site_map-*.bmp
+	if %ERRORLEVEL% == 0 (
+		del site_map-*.bmp
+		echo Site maps compressed.
+		)
 	)
 
 :no_optipng
@@ -131,6 +149,7 @@ if exist "%CD%\site_map-*.bmp" (
 
 rem Module to clean legends xml for Legends Viewer, because workflow jobs are stored there and mess up the copy-abandon-export-replace-view trick for midgame legends mode.  Future dfhack version (after r4 for 0.34.11) will strip these from exports, but it's still required now.
 
+echo Removing non-printing characters from legends xml...
 set "SOH=""" rem because findstr will take this in a variable but not directly.  There must be a way to represent it in plain text though...
 FINDSTR /v /l %SOH% "%CD%\%region#%-legends.xml">"%CD%\%region#%-legends-cleaned.xml"
 del "%CD%\%region#%-legends.xml"
@@ -139,6 +158,7 @@ rename "%region#%-legends-cleaned.xml" "%region#%-legends.xml"
 rem Compress legends with 7z, because the xml is massive
 if not exist "%~dp07z.exe" goto legends_compressed
 
+echo Creating compressed legends archive...
 rem - prefer an archive compatible with "Legends Viewer.exe" ...
 If exist "%region#%*-legends.xml" (
 	if exist "%region#%*-world_history.txt" (
@@ -153,6 +173,7 @@ If exist "%region#%*-legends.xml" (
 				DEL "%CD%\*-world_sites_and_pops.txt"
 				DEL "%CD%\*-world_history.txt"
 				DEL "%CD%\%region#%-legends*.xml"
+				echo Legends archive created, with 'world-graphic' region map (biome+elevation).
 				goto legends_compressed
 			) else (
 				if exist "world_map-%region#%*.*" (
@@ -165,6 +186,7 @@ If exist "%region#%*-legends.xml" (
 				DEL "%CD%\*-world_sites_and_pops.txt"
 				DEL "%CD%\*-world_history.txt"
 				DEL "%CD%\%region#%-legends*.xml"
+				echo Legends archive created, with 'world-map' region map (tileset).
 				goto legends_compressed
 					)
 				)
@@ -174,8 +196,9 @@ If exist "%region#%*-legends.xml" (
 	rem ... but just the xml if that's not possible
 If exist "%region#%*-legends.xml" do (
 	if not exist "Legends Archive for %region#%.zip" do (
-		7z.exe a "%region#%-legends-xml.zip" "%region#%*-legends.xml"
+		"%~dp07z.exe" a "%region#%-legends-xml.zip" "%region#%*-legends.xml"
 		DEL "%CD%\%region#%-legends*.xml"
+		echo Legends xml compressed seperately.
 		goto legends_compressed
 		)
 	)
@@ -218,4 +241,13 @@ if exist "%CD%\site_map-*.*"  (
 rem delete color keys
 if exist "%CD%\*_color_key.txt" DEL "%CD%\*_color_key.txt"
 
+rem reporting completion - 'move' output is not particularly legible (change to xcopy/echo/del?)
+echo.
+echo.
+echo Files moved to User Generated Content folder.
+echo.
+echo Script complete!
+echo.
+rem give user long enough to read last output:
+timeout /t 10
 :end
