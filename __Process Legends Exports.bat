@@ -14,14 +14,7 @@ rem				v2.5	added RealisticMapMaker, a second map processing script; enabled it 
 ECHO Please wait paitently - this script may take several minutes, or even more for very large or long worlds!
 
 rem If placed as a utility in the LNP, run from the DF folder
-IF NOT EXIST "%CD%\Dwarf Fortress.exe" (
-	IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.34.11\Dwarf Fortress.exe" 
-		FOR %%A in (*.bmp 7z.* *.scm optipng.exe GetGimpInstallLocation.cmd) do (
-			if not exist "%CD%\..\..\..\Dwarf Fortress 0.34.11\%%A" copy "%CD%\%%A" "%CD%\..\..\..\Dwarf Fortress 0.34.11\%%A"	rem note that this does not have the 'old .scm' protection built in by the every-time xcopy below.  One or the other should probably change!
-		)
-		CD "..\..\..\Dwarf Fortress 0.34.11"
-	)
-)
+IF NOT EXIST "%CD%\Dwarf Fortress.exe" IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.34.11\Dwarf Fortress.exe" CD "..\..\..\Dwarf Fortress 0.34.11"
 
 REM set region ID, to use in rest of script, works for 1-99 inclusive, if site maps only sets "unknown region"
 FOR /L %%G IN (999,-1,1) DO (
@@ -57,19 +50,18 @@ if not exist "%CD%\*-vol-*.bmp" goto skip_gimp_script
 if not exist "%CD%\*-tmp-*.bmp" goto skip_gimp_script
 if not exist "%CD%\*-bm-*.bmp" goto skip_gimp_script
 
-:: check whether GIMP in installed via the user folder - requires user to have run GIMP before; set script folder
+rem check whether GIMP in installed via the user folder - requires user to have run GIMP before; set script folder
 IF NOT EXIST "%userprofile%\.gimp-*" goto skip_gimp_script
 for /f "usebackq tokens=*" %%f in (`dir /s /b "%userprofile%\.gimp-*"`) do (
 	SET scriptFolder="%%f"
 )
 rem check for GIMP install location (calls external .cmd file)
-for /f "usebackq tokens=*" %%d in (`"GetGimpInstallLocation.cmd" AUTOMODE`) do (
+for /f "usebackq tokens=*" %%d in (`"%~dp0GetGimpInstallLocation.cmd" AUTOMODE`) do (
 	SET gimpLocation="%%d"
 )
 
-:: ensure that the Scheme files are in place; doing this without checks ensures that it's not an earlier version
-xcopy "%CD%\SatMapMaker.scm" "%scriptFolder%\scripts\SatMapMaker.scm" /y /q
-xcopy "%CD%\DwarfMapMaker.scm" "%scriptFolder%\scripts\DwarfMapMaker.scm" /y /q
+rem ensure that the Scheme files are in place, the switches: overwrite without notice, quiet mode, only overwrite if more recent
+xcopy "%~dp0*.scm" "%scriptFolder%\scripts\" /y /q /d
 
 rem The following is taken from the DwarfMapMaker script, by Parker147.  It relies on the GIMP script he wrote.  
 set "mapName=FantasyMapmaker-%region#%.bmp"
@@ -80,9 +72,9 @@ for %%i in (*-veg-*) do set vegetation=%%~fi
 for %%i in (*-vol-*) do set volcanism=%%~fi
 for %%i in (*-tmp-*) do set temperature=%%~fi
 for %%i in (*-bm-*)  do set biome=%%~fi
-for %%i in (mountains.bmp)  do set mountains=%%~fi
-for %%i in (trees.bmp)  do set trees=%%~fi
-for %%i in (dirt.bmp)  do set dirt=%%~fi
+for %%i in ("%~dp0mountains.bmp")  do set mountains=%%~fi
+for %%i in ("%~dp0trees.bmp")  do set trees=%%~fi
+for %%i in ("%~dp0dirt.bmp")  do set dirt=%%~fi
 
 set water=%water:\=\\%
 set elevation=%elevation:\=\\%
@@ -99,14 +91,14 @@ start /wait "Fantasy Map Maker" %gimpLocation% -d -f -i -b "(create-save \"%wate
 
 rem Now call SatMapMaker, which is built on the previous script
 
-:: v1.2 takes an "atmosphere" variable, which adds a blue shade to the image.  Options are 0, 1, 2.  I've set this to skip user input.  
+rem v1.2 takes an "atmosphere" variable, which adds a blue shade to the image.  Options are 0, 1, 2.  I've set this to skip user input.  
 set atmosphere=0
 
 set "mapName=SatelliteMapmaker_%atmosphere%atmo-%region#%.bmp"
 
-for %%i in (sat_mountains.bmp)  do set mountains=%%~fi
-for %%i in (sat_trees.bmp)  do set trees=%%~fi
-for %%i in (sat_dirt.bmp)  do set dirt=%%~fi
+for %%i in ("%~dp0sat_mountains.bmp")  do set mountains=%%~fi
+for %%i in ("%~dp0sat_trees.bmp")  do set trees=%%~fi
+for %%i in ("%~dp0sat_dirt.bmp")  do set dirt=%%~fi
 
 set trees=%trees:\=\\%
 set dirt=%dirt:\=\\%
@@ -119,16 +111,20 @@ start /wait "Realistic Map Maker" %gimpLocation% -d -f -i -b "(create-save-satel
 
 
 rem convert bitmaps to .png
-if not exist "%CD%\optipng.exe" (
+if not exist "%~dp0optipng.exe" (
 	echo OptiPNG is missing!  Images not compressed.
 	goto no_optipng
 	)
-rem - The "compress-bitmaps" part, which I edited to bypass the files used by the map maker above
-if exist "%CD%\*%region#%*.bmp"  optipng -zc9 -zm9 -zs0 -f0 *%region#%*.bmp
-if %ERRORLEVEL% == 0 del *%region#%*.bmp
+rem - The "compress-bitmaps" part, which I edited to bypass the source files used by the map maker above
+if exist "%CD%\*%region#%*.bmp" (
+	"%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet *%region#%*.bmp
+	if %ERRORLEVEL% == 0 del *%region#%*.bmp
+	)
 rem addition to handle site maps: 
-if exist "%CD%\site_map-*.bmp"  optipng -zc9 -zm9 -zs0 -f0 site_map-*.bmp
-if %ERRORLEVEL% == 0 del site_map-*.bmp
+if exist "%CD%\site_map-*.bmp" (
+	"%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet site_map-*.bmp
+	if %ERRORLEVEL% == 0 del site_map-*.bmp
+	)
 
 :no_optipng
 
@@ -141,7 +137,7 @@ del "%CD%\%region#%-legends.xml"
 rename "%region#%-legends-cleaned.xml" "%region#%-legends.xml"
 
 rem Compress legends with 7z, because the xml is massive
-if not exist "%CD%\7z.exe" goto legends_compressed
+if not exist "%~dp07z.exe" goto legends_compressed
 
 rem - prefer an archive compatible with "Legends Viewer.exe" ...
 If exist "%region#%*-legends.xml" (
@@ -152,7 +148,7 @@ If exist "%region#%*-legends.xml" (
 				echo "%region#%-world_history.txt">>listlegends.txt
 				echo "%region#%-world_sites_and_pops.txt">>listlegends.txt
 				echo "world_graphic-%region#%-*.*">>listlegends.txt
-				7z.exe a "Legends Archive for %region#%.zip" @listlegends.txt
+				"%~dp07z.exe" a "Legends Archive for %region#%.zip" @listlegends.txt
 				DEL "%CD%\listlegends.txt"
 				DEL "%CD%\*-world_sites_and_pops.txt"
 				DEL "%CD%\*-world_history.txt"
@@ -164,7 +160,7 @@ If exist "%region#%*-legends.xml" (
 				echo "%region#%-world_history.txt">>listlegends.txt
 				echo "%region#%-world_sites_and_pops.txt">>listlegends.txt
 				echo "world_map-%region#%*.*">>listlegends.txt
-				7z.exe a "Legends Archive for %region#%.zip" @listlegends.txt
+				"%~dp07z.exe" a "Legends Archive for %region#%.zip" @listlegends.txt
 				DEL "%CD%\listlegends.txt"
 				DEL "%CD%\*-world_sites_and_pops.txt"
 				DEL "%CD%\*-world_history.txt"
