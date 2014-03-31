@@ -66,8 +66,7 @@ for /f "usebackq tokens=*" %%f in (`dir /s /b "%userprofile%\.gimp-*"`) do (
 	SET scriptFolder="%%f"
 )
 rem check for GIMP install location (calls external .cmd file)
-SET gimpVersion=%scriptFolder:*.gimp-=%
-for /f "usebackq tokens=*" %%d in (`"%~dp0data\GetGimpInstallLocation.cmd" AUTOMODE %gimpVersion%`) do (
+for /f "usebackq tokens=*" %%d in (`"%~dp0data\GetGimpInstallLocation.cmd" AUTOMODE`) do (
 	SET gimpLocation="%%d"
 )
 
