@@ -29,7 +29,7 @@ GOTO :TheEnd
 rem echo Checking Registry ...
 
 rem Can easily add extra registry entries in here if they are found
-rem for /f "usebackq tokens=2*" %%f in (`reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-2_is1" /v "InstallLocation"`) do call :SubGetExeName "%%g"
+for /f "usebackq tokens=2*" %%f in (`reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GIMP-2_is1" /v "InstallLocation"`) do call :SubGetExeName "%%g"
 
 rem Brute force, but it works. Only tries to scan a drive if it exists.
 if "%LNPGimpLocation%"=="" (
