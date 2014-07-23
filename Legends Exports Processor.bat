@@ -99,6 +99,7 @@ set dirt=%dirt:\=\\%
 set mountains=%mountains:\=\\%
 
 rem  base images for satelite map
+set atmosphere=0 rem [0|1|2]; intensity of blue shade added to image
 set "satellitemapName=SatelliteMapmaker_%atmosphere%atmo-%region#%.bmp"
 for %%i in ("%~dp0sat_mountains.bmp")  do set sat_mountains=%%~fi
 for %%i in ("%~dp0sat_trees.bmp")  do set sat_trees=%%~fi
@@ -107,7 +108,6 @@ set sat_trees=%sat_trees:\=\\%
 set sat_dirt=%sat_dirt:\=\\%
 set sat_mountains=%sat_mountains:\=\\%
 set outputFile=%outputFile:\=\\%
-set atmosphere=0 rem [0|1|2]; intensity of blue shade added to image
 
 start /wait "Fantasy Map Maker" %gimpLocation% -d -f -i -b "(create-save \"%water%\" \"%elevation%\" \"%vegetation%\" \"%volcanism%\" \"%temperature%\" \"%biome%\" \"%trees%\" \"%dirt%\" \"%mountains%\" \"%fantasymapName%\")"
 
