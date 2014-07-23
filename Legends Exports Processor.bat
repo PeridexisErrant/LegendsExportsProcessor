@@ -1,5 +1,5 @@
 @ECHO OFF
-SETLOCAL
+SETLOCAL EnableDelayedExpansion
 rem  This script is released under the GPL3, which can be found at can be found at https://www.gnu.org/licenses/gpl.html
 rem  Updates are published at https://github.com/PeridexisErrant/LegendsExportsProcessor
 
@@ -160,7 +160,7 @@ if not exist "%~dp07z.exe" (
                     echo "%region#%-legends.xml">listlegends.txt
                     echo "%region#%-world_history.txt">>listlegends.txt
                     echo "%region#%-world_sites_and_pops.txt">>listlegends.txt
-                    echo %world_map%>>listlegends.txt
+                    echo !world_map!>>listlegends.txt
                     "%~dp07z.exe" a "Legends Archive for %region#%.zip" @listlegends.txt
                     DEL "listlegends.txt"
                     DEL "*-world_sites_and_pops.txt"
