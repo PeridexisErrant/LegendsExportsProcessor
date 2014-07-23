@@ -22,7 +22,7 @@ IF EXIST "%CD%\Dwarf Fortress.exe" (
     for %%v in (1,1,9) do (
         IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.40.0%%v\Dwarf Fortress.exe" (
             CD "..\..\..\Dwarf Fortress 0.40.0%%v"
-            IF NOT EXIST "%CD%\Dwarf Fortress.exe" (
+            IF NOT EXIST "Dwarf Fortress.exe" (
                 echo Error: Dwarf Fortress Folder not found!
                 goto finish
             )
@@ -69,12 +69,12 @@ for /f "usebackq tokens=*" %%f in (`dir /s /b "%userprofile%\.gimp-*"`) do (
     SET scriptFolder="%%f"
 )
 rem check for GIMP install location (calls external .cmd file)
-for /f "usebackq tokens=*" %%d in (`"%~dp0data\GetGimpInstallLocation.cmd" AUTOMODE`) do (
+for /f "usebackq tokens=*" %%d in (`"%~dp0GetGimpInstallLocation.cmd" AUTOMODE`) do (
     SET gimpLocation="%%d"
 )
 
 rem ensure that the Scheme files are in place, the switches: overwrite without notice, quiet mode, only overwrite if more recent
-xcopy "%~dp0data\*.scm" "%scriptFolder%\scripts\" /y /q /d
+xcopy "%~dp0*.scm" "%scriptFolder%\scripts\" /y /q /d
 
 :: Now to call the GIMP scripts...
 :: shared maps and names
@@ -94,18 +94,18 @@ set outputFile=%outputFile:\=\\%
 
 :: base images for fantasy map
 set "fantasymapName=FantasyMapmaker-%region#%.bmp"
-for %%i in ("%~dp0data\mountains.bmp")  do set mountains=%%~fi
-for %%i in ("%~dp0data\trees.bmp")  do set trees=%%~fi
-for %%i in ("%~dp0data\dirt.bmp")  do set dirt=%%~fi
+for %%i in ("%~dp0mountains.bmp")  do set mountains=%%~fi
+for %%i in ("%~dp0trees.bmp")  do set trees=%%~fi
+for %%i in ("%~dp0dirt.bmp")  do set dirt=%%~fi
 set trees=%trees:\=\\%
 set dirt=%dirt:\=\\%
 set mountains=%mountains:\=\\%
 
 :: base images for satelite map
 set "satellitemapName=SatelliteMapmaker_%atmosphere%atmo-%region#%.bmp"
-for %%i in ("%~dp0data\sat_mountains.bmp")  do set sat_mountains=%%~fi
-for %%i in ("%~dp0data\sat_trees.bmp")  do set sat_trees=%%~fi
-for %%i in ("%~dp0data\sat_dirt.bmp")  do set sat_dirt=%%~fi
+for %%i in ("%~dp0sat_mountains.bmp")  do set sat_mountains=%%~fi
+for %%i in ("%~dp0sat_trees.bmp")  do set sat_trees=%%~fi
+for %%i in ("%~dp0sat_dirt.bmp")  do set sat_dirt=%%~fi
 set sat_trees=%sat_trees:\=\\%
 set sat_dirt=%sat_dirt:\=\\%
 set sat_mountains=%sat_mountains:\=\\%
@@ -120,13 +120,13 @@ start /wait "Satellite Map Maker" %gimpLocation% -d -f -i -b "(create-save-satel
 
 
 rem convert bitmaps to .png
-if not exist "%~dp0data\optipng.exe" (
+if not exist "%~dp0optipng.exe" (
     echo OptiPNG is missing!  Images not compressed.
 ) else (
     echo Compressing maps with OptiPNG...
     rem - The "compress-bitmaps" part, which I edited to bypass the source files used by the map maker above
     if exist "%CD%\*%region#%*.bmp" (
-        "%~dp0data\optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet *%region#%*.bmp
+        "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet *%region#%*.bmp
         if %ERRORLEVEL% == 0 (
             del *%region#%*.bmp
             echo Region maps compressed.  
@@ -134,7 +134,7 @@ if not exist "%~dp0data\optipng.exe" (
     )
     rem addition to handle site maps: 
     if exist "%CD%\site_map-*.bmp" (
-        "%~dp0data\optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet site_map-*.bmp
+        "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet site_map-*.bmp
         if %ERRORLEVEL% == 0 (
             del site_map-*.bmp
             echo Site maps compressed.
@@ -143,7 +143,7 @@ if not exist "%~dp0data\optipng.exe" (
 )
 
 rem Compress legends with 7z, because the xml is massive
-if not exist "%~dp0data\7z.exe" (
+if not exist "%~dp07z.exe" (
     echo 7zip is missing!  Legends not compressed.
 ) else (
     echo Creating compressed legends archive...
@@ -164,7 +164,7 @@ if not exist "%~dp0data\7z.exe" (
                     echo "%region#%-world_history.txt">>listlegends.txt
                     echo "%region#%-world_sites_and_pops.txt">>listlegends.txt
                     echo %world_map%>>listlegends.txt
-                    "%~dp0data\7z.exe" a "Legends Archive for %region#%.zip" @listlegends.txt
+                    "%~dp07z.exe" a "Legends Archive for %region#%.zip" @listlegends.txt
                     DEL "%CD%\listlegends.txt"
                     DEL "%CD%\*-world_sites_and_pops.txt"
                     DEL "%CD%\*-world_history.txt"
@@ -174,7 +174,7 @@ if not exist "%~dp0data\7z.exe" (
                 )
             )
         ) else (
-            "%~dp0data\7z.exe" a "%region#%-legends-xml.zip" "%region#%*-legends.xml"
+            "%~dp07z.exe" a "%region#%-legends-xml.zip" "%region#%*-legends.xml"
             DEL "%CD%\%region#%-legends*.xml"
             echo Legends xml compressed seperately.
         )
