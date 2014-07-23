@@ -1,7 +1,7 @@
 @ECHO OFF
 SETLOCAL
-:: This script is released under the GPL3, which can be found at can be found at https://www.gnu.org/licenses/gpl.html
-:: Updates are published at https://github.com/PeridexisErrant/LegendsExportsProcessor
+rem  This script is released under the GPL3, which can be found at can be found at https://www.gnu.org/licenses/gpl.html
+rem  Updates are published at https://github.com/PeridexisErrant/LegendsExportsProcessor
 
 echo.
 echo This is a script to process files exported from Dwarf Fortress's Legends Mode.  
@@ -13,7 +13,7 @@ echo.
 echo -----------------------------
 echo.
 
-:: find DF, which is always in the folder exports go to, in %CD% or as if from LNP utilities folder, and set working location there
+rem  find DF, which is always in the folder exports go to, in %CD% or as if from LNP utilities folder, and set working location there
 cd /D "%~dp0" rem set working directory to script location
 
 IF EXIST "%CD%\Dwarf Fortress.exe" (
@@ -34,7 +34,7 @@ IF EXIST "%CD%\Dwarf Fortress.exe" (
 REM set region ID, to use in rest of script, works for 1-99 inclusive, if site maps only sets "unknown region"
 set region#=none
 FOR /L %%G IN (99,-1,1) DO (
-    IF EXIST "%CD%\*region%%G*.txt"  (
+    IF EXIST "*region%%G*.txt"  (
         set "region#=region%%G"
         echo Script now processing legends exports from %region#%.
     )
@@ -55,13 +55,10 @@ if "%region#%" == "none" (
 
 REM GIMP Map Makers section
 
-:: check if the maps used by the GIMP script are present, and if not skip the whole bit
-if not exist "%CD%\*-elw-*.bmp" goto skip_gimp_script
-if not exist "%CD%\*-el-*.bmp" goto skip_gimp_script
-if not exist "%CD%\*-veg-*.bmp" goto skip_gimp_script
-if not exist "%CD%\*-vol-*.bmp" goto skip_gimp_script
-if not exist "%CD%\*-tmp-*.bmp" goto skip_gimp_script
-if not exist "%CD%\*-bm-*.bmp" goto skip_gimp_script
+rem  check if the maps used by the GIMP script are present, and if not skip the whole bit
+for /l %%G in (-elw -el- -veg- -vol- -tmp- -bm-) do (
+    if not exist "*%%G*.bmp" goto skip_gimp_script
+)
 
 rem check whether GIMP in installed via the user folder - requires user to have run GIMP before; set script folder
 IF NOT EXIST "%userprofile%\.gimp-*" goto skip_gimp_script
@@ -76,8 +73,8 @@ for /f "usebackq tokens=*" %%d in (`"%~dp0GetGimpInstallLocation.cmd" AUTOMODE`)
 rem ensure that the Scheme files are in place, the switches: overwrite without notice, quiet mode, only overwrite if more recent
 xcopy "%~dp0*.scm" "%scriptFolder%\scripts\" /y /q /d
 
-:: Now to call the GIMP scripts...
-:: shared maps and names
+rem  Now to call the GIMP scripts...
+rem  shared maps and names
 for %%i in (*-elw-*) do set water=%%~fi
 for %%i in (*-el-*)  do set elevation=%%~fi
 for %%i in (*-veg-*) do set vegetation=%%~fi
@@ -92,7 +89,7 @@ set temperature=%temperature:\=\\%
 set biome=%biome:\=\\%
 set outputFile=%outputFile:\=\\%
 
-:: base images for fantasy map
+rem  base images for fantasy map
 set "fantasymapName=FantasyMapmaker-%region#%.bmp"
 for %%i in ("%~dp0mountains.bmp")  do set mountains=%%~fi
 for %%i in ("%~dp0trees.bmp")  do set trees=%%~fi
@@ -101,7 +98,7 @@ set trees=%trees:\=\\%
 set dirt=%dirt:\=\\%
 set mountains=%mountains:\=\\%
 
-:: base images for satelite map
+rem  base images for satelite map
 set "satellitemapName=SatelliteMapmaker_%atmosphere%atmo-%region#%.bmp"
 for %%i in ("%~dp0sat_mountains.bmp")  do set sat_mountains=%%~fi
 for %%i in ("%~dp0sat_trees.bmp")  do set sat_trees=%%~fi
@@ -125,7 +122,7 @@ if not exist "%~dp0optipng.exe" (
 ) else (
     echo Compressing maps with OptiPNG...
     rem - The "compress-bitmaps" part, which I edited to bypass the source files used by the map maker above
-    if exist "%CD%\*%region#%*.bmp" (
+    if exist "*%region#%*.bmp" (
         "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet *%region#%*.bmp
         if %ERRORLEVEL% == 0 (
             del *%region#%*.bmp
@@ -151,7 +148,7 @@ if not exist "%~dp07z.exe" (
     If exist "%region#%*-legends.xml" (
         if exist "%region#%*-world_history.txt" (
             if exist "%region#%*-world_sites_and_pops.txt" (
-                :: can use either world map, but prefer biome+elevation over tileset
+                rem  can use either world map, but prefer biome+elevation over tileset
                 set world_map=none
                 if exist "world_graphic-%region#%*.*" (
                     set world_map="world_graphic-%region#%*.*"
@@ -165,17 +162,17 @@ if not exist "%~dp07z.exe" (
                     echo "%region#%-world_sites_and_pops.txt">>listlegends.txt
                     echo %world_map%>>listlegends.txt
                     "%~dp07z.exe" a "Legends Archive for %region#%.zip" @listlegends.txt
-                    DEL "%CD%\listlegends.txt"
-                    DEL "%CD%\*-world_sites_and_pops.txt"
-                    DEL "%CD%\*-world_history.txt"
-                    DEL "%CD%\%region#%-legends*.xml"
+                    DEL "listlegends.txt"
+                    DEL "*-world_sites_and_pops.txt"
+                    DEL "*-world_history.txt"
+                    DEL "%region#%-legends*.xml"
                     echo Compressed legends archive created.
                     goto legends_compressed
                 )
             )
         ) else (
             "%~dp07z.exe" a "%region#%-legends-xml.zip" "%region#%*-legends.xml"
-            DEL "%CD%\%region#%-legends*.xml"
+            DEL "%region#%-legends*.xml"
             echo Legends xml compressed seperately.
         )
     )
@@ -184,40 +181,39 @@ if not exist "%~dp07z.exe" (
 :legends_compressed
 
 rem moving all the exports to the User Content folder
-
-if not exist "%CD%\..\User Generated Content" MD "%CD%\..\User Generated Content"
+if not exist "..\User Generated Content" MD "..\User Generated Content"
 
 rem create a region-specific folder
-SET "legendsfolder=%CD%\..\User Generated Content\%region#% legends and data"
+SET "legendsfolder=..\User Generated Content\%region#% legends and data"
 IF NOT EXIST "%legendsfolder%" MD "%legendsfolder%"
 
 rem world maps to a 'world maps' subfolder
-if exist "%CD%\*%region#%*.png"  (
+if exist "*%region#%*.png"  (
     if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
-    MOVE "%CD%\*%region#%*.png" "%legendsfolder%\world maps"
+    MOVE "*%region#%*.png" "%legendsfolder%\world maps"
 )
-if exist "%CD%\*%region#%*.bmp"  (
+if exist "*%region#%*.bmp"  (
     if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
-    MOVE "%CD%\*%region#%*.bmp" "%legendsfolder%\world maps"
+    MOVE "*%region#%*.bmp" "%legendsfolder%\world maps"
 )
 
 rem move legends to the region folder
 if exist "%CD%\Legends Archive for %region#%.zip" MOVE "%CD%\Legends Archive for %region#%.zip" "%legendsfolder%"
-if exist "%CD%\%region#%*-world_gen_param.txt" MOVE "%CD%\%region#%*-world_gen_param.txt" "%legendsfolder%"
+if exist "%region#%*-world_gen_param.txt" MOVE "%region#%*-world_gen_param.txt" "%legendsfolder%"
 rem ... and if a previous part of the script didn't work properly:
-if exist "%CD%\%region#%-legends-xml.zip" MOVE "%CD%\%region#%-legends-xml.zip" "%legendsfolder%"
-if exist "%CD%\%region#%-legends.xml" MOVE "%CD%\%region#%-legends.xml" "%legendsfolder%"
-if exist "%CD%\*-world_sites_and_pops.txt" MOVE "%CD%\*-world_sites_and_pops.txt" "%legendsfolder%"
-if exist "%CD%\*-world_history.txt" MOVE "%CD%\*-world_history.txt" "%legendsfolder%"
+if exist "%region#%-legends-xml.zip" MOVE "%region#%-legends-xml.zip" "%legendsfolder%"
+if exist "%region#%-legends.xml" MOVE "%region#%-legends.xml" "%legendsfolder%"
+if exist "*-world_sites_and_pops.txt" MOVE "*-world_sites_and_pops.txt" "%legendsfolder%"
+if exist "*-world_history.txt" MOVE "*-world_history.txt" "%legendsfolder%"
 
 rem move site maps to a 'site maps' subfolder
-if exist "%CD%\site_map-*.*"  (
+if exist "site_map-*.*"  (
     if not exist "%legendsfolder%\site maps" MD "%legendsfolder%\site maps"
-    MOVE "%CD%\site_map-*.*" "%legendsfolder%\site maps"
+    MOVE "site_map-*.*" "%legendsfolder%\site maps"
     )
 
 rem delete color keys
-if exist "%CD%\*_color_key.txt" DEL "%CD%\*_color_key.txt"
+if exist "*_color_key.txt" DEL "*_color_key.txt"
 
 rem reporting completion - 'move' output is not particularly legible (change to xcopy/echo/del?)
 echo.
