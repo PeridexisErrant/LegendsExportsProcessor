@@ -16,11 +16,11 @@ echo.
 rem  find DF, which is always in the folder exports go to, in %CD% or as if from LNP utilities folder, and set working location there
 cd /D "%~dp0" rem set working directory to script location
 
-IF EXIST "%CD%\Dwarf Fortress.exe" (
+IF EXIST "Dwarf Fortress.exe" (
     echo Found exports folder (script is already in folder)
 ) else (
     for %%v in (1,1,9) do (
-        IF EXIST "%CD%\..\..\..\Dwarf Fortress 0.40.0%%v\Dwarf Fortress.exe" (
+        IF EXIST "..\..\..\Dwarf Fortress 0.40.0%%v\Dwarf Fortress.exe" (
             CD "..\..\..\Dwarf Fortress 0.40.0%%v"
             IF NOT EXIST "Dwarf Fortress.exe" (
                 echo Error: Dwarf Fortress Folder not found!
@@ -40,7 +40,7 @@ FOR /L %%G IN (99,-1,1) DO (
     )
 )
 if "%region#%" == "none" (
-    If exist "%CD%\site_map-*.bmp"  (
+    If exist "site_map-*.bmp"  (
         set "region#=unknown region"
         echo Only found site maps from unknown region
     ) else (
@@ -130,7 +130,7 @@ if not exist "%~dp0optipng.exe" (
         )
     )
     rem addition to handle site maps: 
-    if exist "%CD%\site_map-*.bmp" (
+    if exist "site_map-*.bmp" (
         "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet site_map-*.bmp
         if %ERRORLEVEL% == 0 (
             del site_map-*.bmp
@@ -167,7 +167,6 @@ if not exist "%~dp07z.exe" (
                     DEL "*-world_history.txt"
                     DEL "%region#%-legends*.xml"
                     echo Compressed legends archive created.
-                    goto legends_compressed
                 )
             )
         ) else (
@@ -178,8 +177,6 @@ if not exist "%~dp07z.exe" (
     )
 )
 
-:legends_compressed
-
 rem moving all the exports to the User Content folder
 if not exist "..\User Generated Content" MD "..\User Generated Content"
 
@@ -188,24 +185,16 @@ SET "legendsfolder=..\User Generated Content\%region#% legends and data"
 IF NOT EXIST "%legendsfolder%" MD "%legendsfolder%"
 
 rem world maps to a 'world maps' subfolder
-if exist "*%region#%*.png"  (
-    if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
-    MOVE "*%region#%*.png" "%legendsfolder%\world maps"
+for /l %%G in (png bmp) do (
+    if exist "*%region#%*.%%G"  (
+        if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
+        MOVE "*%region#%*.%%G" "%legendsfolder%\world maps"
+    )
 )
-if exist "*%region#%*.bmp"  (
-    if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
-    MOVE "*%region#%*.bmp" "%legendsfolder%\world maps"
-)
-
 rem move legends to the region folder
-if exist "%CD%\Legends Archive for %region#%.zip" MOVE "%CD%\Legends Archive for %region#%.zip" "%legendsfolder%"
-if exist "%region#%*-world_gen_param.txt" MOVE "%region#%*-world_gen_param.txt" "%legendsfolder%"
-rem ... and if a previous part of the script didn't work properly:
-if exist "%region#%-legends-xml.zip" MOVE "%region#%-legends-xml.zip" "%legendsfolder%"
-if exist "%region#%-legends.xml" MOVE "%region#%-legends.xml" "%legendsfolder%"
-if exist "*-world_sites_and_pops.txt" MOVE "*-world_sites_and_pops.txt" "%legendsfolder%"
-if exist "*-world_history.txt" MOVE "*-world_history.txt" "%legendsfolder%"
-
+for /l %%G in ("Legends Archive for %region#%.zip" "%region#%*-world_gen_param.txt" "%region#%-legends-xml.zip" "%region#%-legends.xml" "*-world_sites_and_pops.txt" "*-world_history.txt") do (
+    if exist %%G move %%G "%legendsfolder%"
+)
 rem move site maps to a 'site maps' subfolder
 if exist "site_map-*.*"  (
     if not exist "%legendsfolder%\site maps" MD "%legendsfolder%\site maps"
@@ -215,12 +204,11 @@ if exist "site_map-*.*"  (
 rem delete color keys
 if exist "*_color_key.txt" DEL "*_color_key.txt"
 
-rem reporting completion - 'move' output is not particularly legible (change to xcopy/echo/del?)
 echo.
 echo.
 echo Files moved to User Generated Content folder.
 echo.
 echo Script complete!
-
+echo.
 :finish
 timeout /t 60
