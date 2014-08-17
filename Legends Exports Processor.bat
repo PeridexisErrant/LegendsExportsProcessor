@@ -107,7 +107,7 @@ for /f %%G in ("png bmp") do (
     )
 )
 rem move legends to the region folder
-if exist "%region#%-legends_archive.zip" move "%region#%-legends-archive.zip" "%legendsfolder%"
+if exist "%region#%-legends_archive.zip" move "%region#%-legends_archive.zip" "%legendsfolder%"
 if exist "%region#%-world_gen_param.txt" move "%region#%-world_gen_param.txt" "%legendsfolder%"
 
 rem move site maps to a 'site maps' subfolder
