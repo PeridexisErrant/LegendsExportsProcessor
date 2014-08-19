@@ -28,93 +28,74 @@ IF EXIST "Dwarf Fortress.exe" (
 REM set region ID, to use in rest of script, works for 1-99 inclusive, if site maps only sets "unknown region"
 set region#=none
 FOR /L %%G IN (99,-1,1) DO (
-    IF EXIST "*region%%G*.txt"  (
+    IF EXIST "region%%G-*.???"  (
         set "region#=region%%G"
-        echo Script now processing legends exports from !region#!.
+        echo Script now processing legends exports from region%%G.
     )
 )
 if "%region#%" == "none" (
-    If exist "site_map-*.bmp"  (
-        set "region#=unknown region"
-        echo Only found site maps from unknown region
-    ) else (
-        echo.
-        Echo Error:  Legends Exports not found!
-        echo.
-        echo For all parts of this script to work, you need to export the 'p' general information, 'x'ml legends file, and all 'd'etailed maps.  Site maps may also be exported.  
-        goto finish
-    )
+	echo.
+	Echo Error:  Legends Exports not found!
+	echo.
+	echo For all parts of this script to work, you need to export the 'p' general information, 'x'ml legends file, and all 'd'etailed maps.  Site maps may also be exported.  
+	goto finish
 )
 
 rem convert bitmaps to .png
-if not exist "%~dp0optipng.exe" (
-    echo OptiPNG is missing!  Images not compressed.
-) else (
+if exist "%~dp0optipng.exe" (
     echo Compressing maps with OptiPNG...
     rem - The "compress-bitmaps" part, which I edited to bypass the source files used by the map maker above
-    if exist "*%region#%*.bmp" (
-        "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet *%region#%*.bmp
+    if exist "%region#%-*.bmp" (
+        "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet %region#%-*.bmp
         if %ERRORLEVEL% == 0 (
-            del *%region#%*.bmp
-            echo Region maps compressed.  
+            del %region#%-*.bmp
+            echo Maps compressed.  
         )
-    ) else ( echo No region maps found. )
-    rem addition to handle site maps: 
-    if exist "site_map-*.bmp" (
-        "%~dp0optipng.exe" -zc9 -zm9 -zs0 -f0 -quiet site_map-*.bmp
-        if %ERRORLEVEL% == 0 (
-            del site_map-*.bmp
-            echo Site maps compressed.
-        )
-    ) else ( echo No site maps found. )
+    )
 )
 
 rem Compress legends with 7z, because the xml is massive and Legends/World Viewer take these files in a zip
 echo Creating compressed legends archive...
 set world_map=none
-if exist "world_graphic-%region#%*.*" (
-    set world_map="world_graphic-%region#%*.*"
+if exist "%region#%-*-detailed.???" (
+    set world_map="%region#%-*-detailed.???"
 ) else ( 
-    if exist "world_map-%region#%*.*" (
-        set world map="world_map-%region#%*.*"
+    if exist "%region#%-*-world_map.???" (
+        set world map="%region#%-*-world_map.???"
     )
 )
 if not "world_map" == "none" (
-    echo "%region#%-legends.xml">listlegends.txt
-    echo "%region#%-world_history.txt">>listlegends.txt
-    echo "%region#%-world_sites_and_pops.txt">>listlegends.txt
+    echo "%region#%-*-legends.xml">listlegends.txt
+    echo "%region#%-*-world_history.txt">>listlegends.txt
+    echo "%region#%-*-world_sites_and_pops.txt">>listlegends.txt
     echo %world_map%>>listlegends.txt
     "%~dp07z.exe" a "%region#%-legends_archive.zip" @listlegends.txt
+    DEL "%region#%-*-legends.xml"
+    DEL "%region#%-*-world_history.txt"
+    DEL "%region#%-*-world_sites_and_pops.txt"
     DEL "listlegends.txt"
-    DEL "%region#%-world_sites_and_pops.txt"
-    DEL "%region#%-world_history.txt"
-    DEL "%region#%-legends.xml"
     echo Compressed legends archive created.
 )
 
 rem moving all the exports to the User Content folder
 if not exist "..\User Generated Content" MD "..\User Generated Content"
-
 rem create a region-specific folder
 SET "legendsfolder=..\User Generated Content\%region#% legends and data"
 IF NOT EXIST "%legendsfolder%" MD "%legendsfolder%"
 
 rem world maps to a 'world maps' subfolder
-for /f %%G in ("png bmp") do (
-    if exist "*%region#%*.%%G"  (
-        if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
-        MOVE "*%region#%*.%%G" "%legendsfolder%\world maps"
-    )
+if exist "%region#%-*-site_map-*.png"  ( rem all site maps
+	if not exist "%legendsfolder%\site maps" MD "%legendsfolder%\site maps"
+	MOVE "%region#%-*-site_map-*.png" "%legendsfolder%\site maps"
+)
+if exist "%region#%-*.png"  ( rem all non-site maps, ie world maps
+	if not exist "%legendsfolder%\world maps" MD "%legendsfolder%\world maps"
+	MOVE "%region#%-*-*.png" "%legendsfolder%\world maps"
 )
 rem move legends to the region folder
 if exist "%region#%-legends_archive.zip" move "%region#%-legends_archive.zip" "%legendsfolder%"
 if exist "%region#%-world_gen_param.txt" move "%region#%-world_gen_param.txt" "%legendsfolder%"
-
-rem move site maps to a 'site maps' subfolder
-if exist "site_map-*.*"  (
-    if not exist "%legendsfolder%\site maps" MD "%legendsfolder%\site maps"
-    MOVE "site_map-*.*" "%legendsfolder%\site maps"
-)
+if exist "%region#%-*-legends.xml" move "%region#%-*-legends.xml" "%legendsfolder%"
 
 rem delete color keys
 if exist "*_color_key.txt" DEL "*_color_key.txt"
