@@ -13,6 +13,9 @@ echo.
 echo -----------------------------
 echo.
 
+rem set working directory to script location - to work when launched from elsewhere
+cd %~dp0
+
 rem  find DF, which is always in the folder exports go to, in %CD% or as if from LNP utilities folder, and set working location there
 IF EXIST "Dwarf Fortress.exe" (
     echo Found exports folder, script is already in folder
