@@ -1,7 +1,10 @@
 LegendsExportsProcessor
 =======================
 
-A simple script to compress and sort the files exported from Dwarf Fortress' Legends Mode.  Compressing the .bmp maps to .png usually reduces file size by 95 to 99+ percent (yes, really).  Compressing the legends.xml, which is tens to hundreds of MB, often reduces the file size by a similar margin.  The script then moves the compressed files to region-specific folder and puts site maps and world maps in separate subfolders.  
+A simple script to compress and sort the files exported from Dwarf Fortress' Legends Mode.  
+Compressing the .bmp maps to .png usually reduces file size by 95 to 99+ percent (yes, really).  
+Compressing the legends.xml, which is tens to hundreds of MB, often reduces the file size by a similar margin.  
+The script then moves the compressed files to region-specific folder and puts site maps and world maps in separate subfolders.  
 
 To get a copy, can use the 'download as a zip' option on the right and place the whole unzipped folder in the LNP/utilities folder of the DF Starter pack or the contents in the same folder as the Dwarf Fortress executable.  
 
@@ -20,3 +23,11 @@ General overview of functions:
 4. Call 7zip to compress the legends XML in .zip format.  If all required files are available, an archive compatible with "Legends Viewer" will be created (includes other text history files and a map).
 
 5. Move all output files to a "User Generated Content" folder next to the Dwarf Fortress folder, and delete color key text files.  
+
+----------------------------
+
+The Python version is written for Python 3 as a cross-platform implementation.
+
+It is more robust regarding unexpected circumstances, and uses the built-in zipfile function instead of 7z.  
+However, it isn't quite cross-platform as I'm unsure how to comvert bitmaps without optipng available.  
+It must be run in the DF folder, and won't work from anywhere else - unlike the .bat version.
