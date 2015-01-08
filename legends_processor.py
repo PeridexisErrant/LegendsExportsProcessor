@@ -22,9 +22,22 @@ def get_region_info():
 
 def compress_bitmaps():
     """Compresses all bitmap maps."""
-    if os.name == 'nt' and os.path.isfile('optipng.exe'):
+    try:
+        from PIL import Image
+    except ImportError:
+        print('Please install PIL or Pillow to compress bitmaps.')
+        call_optipng()
+    else:
         for fname in glob.glob('-'.join(get_region_info()) + '-*.bmp'):
-            # call optipng (as in compress_bitmaps.bat), without window
+            f = Image.open(fname)
+            f.save(fname[:-3] + 'png', format='PNG', optimize=True)
+            os.remove(fname)
+
+def call_optipng()
+    """Calling optipng can work well, but isn't very portable."""
+    if os.name == 'nt' and os.path.isfile('optipng.exe'):
+        print('Falling back to optipng for image compression.')
+        for fname in glob.glob('-'.join(get_region_info()) + '-*.bmp'):
             ret = subprocess.call(['optipng', '-zc9', '-zm9', '-zs0', '-f0',
                                    fname], creationflags=0x00000008)
             if ret == 0:
@@ -62,12 +75,9 @@ def move_files():
     that dir exists."""
     dirname = get_region_info()[0] + '_legends_exports'
     if os.path.isdir(os.path.join('..', 'User Generated Content')):
-        dirname = os.path.join('..', 'User Generated Content',
-                               get_region_info()[0] + '_legends_exports')
-
+        dirname = os.path.join('..', 'User Generated Content', dirname)
     for site_map in glob.glob('-'.join(get_region_info()) + '-site_map-*'):
         os.renames(site_map, os.path.join(dirname, 'site_maps', site_map))
-
     maps = ('world_map', 'bm', 'detailed', 'dip', 'drn', 'el', 'elw',
             'evil', 'hyd', 'nob', 'rain', 'sal', 'sav', 'str', 'tmp',
             'trd', 'veg', 'vol')
@@ -75,7 +85,6 @@ def move_files():
         m = glob.glob('-'.join(get_region_info()) + '-' + m + '.???')
         if m:
             os.renames(m[0], os.path.join(dirname, 'region_maps', m[0]))
-
     files = (glob.glob('-'.join(get_region_info()) + '*') +
              [get_region_info()[0] + '-world_gen_param.txt'])
     for file in files:
