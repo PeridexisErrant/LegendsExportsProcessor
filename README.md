@@ -1,5 +1,13 @@
+THIS PROJECT IS OBSOLETE
+========================
+I have moved my maintenance efforts entirely to the legends processor module of the PyLNP,
+which is more stable and efficient.  While this bundle will remain available,
+I suggest using the PyLNP instead unless you have good reason not to.
+
+https://bitbucket.org/Pidgeot/python-lnp
+
 LegendsExportsProcessor
-=======================
+-----------------------
 
 A simple script to compress and sort the files exported from Dwarf Fortress' Legends Mode.  
 Compressing the .bmp maps to .png usually reduces file size by 95 to 99+ percent (yes, really).  
